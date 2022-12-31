@@ -7,26 +7,19 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "auctions")
 public class Auction {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  //face ca id-ul sa fie autoincrement (mysql server face asta)
     private long id;
-
     private String auctionTitle;
-
     private String auctionDescription;
-
     private String auctionImage;
-
     private float initialPrice;
-
     private float finalPrice;
-
     private LocalDateTime created_at;
 
     //mai multe licitatii pot avea acelasi user
     @ManyToOne(optional = false)  //optional = false pt ca nu poate exista o licitatie fara un user
-    private User created_by;
+    private User createdBy;
 
     public Auction() {
     }
@@ -87,11 +80,11 @@ public class Auction {
         this.created_at = created_at;
     }
 
-    public User getCreated_by() {
-        return created_by;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreated_by(User created_by) {
-        this.created_by = created_by;
+    public void setCreatedBy(User created_by) {
+        this.createdBy = created_by;
     }
 }

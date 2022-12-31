@@ -11,26 +11,28 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     private String name;
-
     private String surname;
-
     private String userLocation;
-
     private String username;
-
     private String phoneNumber;
-
     private String password;
-//
-//    private roles role;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    private List<Authority> authorities = new ArrayList<>();
 
     public User() {
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthoritites() {
+//        List<GrantedAuthority> roles = new ArrayList<>();
+//        roles.add(new Authority("ROLE_ADMIN"));
+////        roles.add(new Authority("ROLE_USER"));
+//        return roles;
+        return authorities;
     }
 
     public long getId() {
@@ -70,6 +72,10 @@ public class User implements UserDetails {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -90,10 +96,6 @@ public class User implements UserDetails {
         return true;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -107,6 +109,10 @@ public class User implements UserDetails {
         List<GrantedAuthority> roles = new ArrayList<>();
         roles.add(new Authority("ADMIN"));
         return roles;
+    }
+
+    public void setAuthorities(List<Authority> authorities) {
+        this.authorities = authorities;
     }
 
     @Override

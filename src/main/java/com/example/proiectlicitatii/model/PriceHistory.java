@@ -9,15 +9,12 @@ public class PriceHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     @ManyToOne
     private Auction auctionID;
-
     private float updated_price;
-
     @ManyToOne(optional = false)
     private User bid_by;
-
+    
     public PriceHistory() {
     }
 

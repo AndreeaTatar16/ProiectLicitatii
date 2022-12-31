@@ -1,5 +1,6 @@
 package com.example.proiectlicitatii.model;
 
+import net.minidev.json.annotate.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -7,15 +8,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "authorities")
 public class Authority implements GrantedAuthority {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     private String authority;
-
     @ManyToOne(optional = false)
-    private User user_id;
+    @JsonIgnore
+    private User user;
 
     public Authority() {
     }
@@ -40,11 +39,11 @@ public class Authority implements GrantedAuthority {
         this.authority = authority;
     }
 
-    public User getUser_id() {
-        return user_id;
+    public User getUser() {
+        return user;
     }
 
-    public void setUser_id(User user_id) {
-        this.user_id = user_id;
+    public void setUser(User user) {
+        this.user = user;
     }
 }
