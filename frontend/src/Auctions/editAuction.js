@@ -14,10 +14,11 @@ const EditAuction = () => {
         finalPrice: ""
     });
 
+    //functie care preia din input valoarea tastata si o introduce sub forma cheie-valoare in campurile auction
     function updateAuction(property, value) {
-        const newAuction = {...auction}; //duplicate an object auction
+        const newAuction = {...auction};     //duplicate an object auction
         newAuction[property] = value;
-        setAuction(newAuction);
+        setAuction(newAuction);   //seteaza in obiectul initial noile valori
         console.log(auction);
     }
 
@@ -61,31 +62,32 @@ const EditAuction = () => {
                     <h1>Auction with id: {auctionId}</h1>
                     <div className="mb-3">
                         <label htmlFor="exampleFormControlTextarea1" className="form-label">Auction title</label>
-                        <input className="form-control" type="text" id="auctionTitle"
+                        <input className="form-control" type="text" id="auctionTitle" value={auction.auctionTitle}
                                onChange={(e) => updateAuction("auctionTitle", e.target.value)}
                         ></input>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="exampleFormControlTextarea1" className="form-label">Auction description</label>
                         <input className="form-control" type="text" id="auctionDescription"
+                               value={auction.auctionDescription}
                                onChange={(e) => updateAuction("auctionDescription", e.target.value)}
                         ></input>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="formFile" className="form-label">Auction image</label>
-                        <input className="form-control" type="file" id="auctionImage"
+                        <input className="form-control" type="file" id="auctionImage" value={auction.auctionImage}
                                onChange={(e) => updateAuction("auctionImage", e.target.value)}
                         ></input>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="exampleFormControlTextarea1" className="form-label">Initial price</label>
-                        <input className="form-control" type="number" id="initialPrice"
+                        <input className="form-control" type="number" id="initialPrice" value={auction.initialPrice}
                                onChange={(e) => updateAuction("initialPrice", e.target.value)}
                         ></input>
                     </div>
                     <div className="mb-3">
                         <label htmlFor="exampleFormControlTextarea1" className="form-label">Final price</label>
-                        <input className="form-control" type="number" id="finalPrice"
+                        <input className="form-control" type="number" id="finalPrice" value={auction.finalPrice}
                                onChange={(e) => updateAuction("finalPrice", e.target.value)}
                         ></input>
                     </div>

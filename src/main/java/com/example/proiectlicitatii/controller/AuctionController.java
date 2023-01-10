@@ -3,6 +3,7 @@ package com.example.proiectlicitatii.controller;
 import com.example.proiectlicitatii.model.Auction;
 import com.example.proiectlicitatii.model.User;
 import com.example.proiectlicitatii.service.AuctionService;
+import com.example.proiectlicitatii.service.PriceHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,9 @@ import java.util.Set;
 public class AuctionController {
     @Autowired
     private AuctionService auctionService;
+
+    @Autowired
+    private PriceHistoryService priceHistoryService;
 
     @GetMapping("")
     public ResponseEntity<?> getAuctions(@AuthenticationPrincipal User user) {
@@ -54,8 +58,10 @@ public class AuctionController {
 
     @DeleteMapping("deleteAuction/{auctionId}")
     public ResponseEntity<?> deleteAuction(@PathVariable Long auctionId, @AuthenticationPrincipal User user) {
+        priceHistoryService.deleteById(auctionId);
         auctionService.deleteById(auctionId);
 
         return ResponseEntity.ok().build();
     }
+
 }
