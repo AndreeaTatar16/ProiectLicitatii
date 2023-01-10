@@ -4,7 +4,8 @@ import {Link} from "react-router-dom";
 import NavbarComponent from "../components/NavbarComponent";
 import Footer from "../components/Footer";
 import {Button, Form, ListGroup, Modal, Table} from "react-bootstrap";
-import Stomp from 'stompjs';
+import {Client} from "@stomp/stompjs";
+
 
 const AuctionView = () => {
     const auctionId = window.location.href.split("/auctions/")[1];
@@ -12,10 +13,9 @@ const AuctionView = () => {
     const [auction, setAuction] = useState(null);
     const [priceHistory, setPriceHistory] = useState(null);
     const [updated_price, setUpdatedPrice] = useState("");
-    const [message, setMessage] = useState(
-        {
-            message: "",
-        });
+    const [lastBid, setLastBid] = useState("");
+    const [message, setMessage] = useState("");
+    const [client, setClient] = useState(null);
 
     useEffect(() => {
         fetch(`/auctions/${auctionId}`, {
@@ -66,7 +66,9 @@ const AuctionView = () => {
         }).then(priceHistory => {
             window.location.href = `/auctions/${auctionId}`;
             setPriceHistory(priceHistory);
-            console.log(priceHistory);
+            console.log(priceHistory.updated_price);
+            setLastBid(priceHistory);
+            console.log("un string de identificat" + lastBid);
         });
     }
 
@@ -82,7 +84,7 @@ const AuctionView = () => {
             if (response.status === 200)
                 return response.json();
         }).then(priceHistoryData => {
-            console.log(priceHistoryData);
+            //console.log(priceHistoryData);
             setPriceHistory(priceHistoryData);
         });
     }, []);
@@ -90,6 +92,50 @@ const AuctionView = () => {
     //const SOCKET_URL = 'ws://localhost:8081/ws-message?token=${eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzAzNjA5NjgyLCJpYXQiOjE2NzI1MDU2ODIsImF1dGhvcml0aWVzIjpbIkFETUlOIl19.DIGdxKw49UbIBNWjsHcH-qJnackLzoq9niK2htAZyXlE0N7myrZjjH_W_w-cOweew8CTkMpl6YmJdjc9t5MA3w}';
     const SOCKET_URL = `ws://localhost:8081/ws-message?token=${jwt}`;
     //const SOCKET_URL = 'ws://localhost:8081/ws-message';
+
+
+    useEffect(() => {
+        const client = new Client({
+            brokerURL: SOCKET_URL,
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            debug: (str) => {
+                console.log(str);
+            }
+        });
+        setClient(client);
+        client.onConnect = (frame) => {
+            console.log(`Connected to server: ${frame}`);
+            client.subscribe(`/auctions_update/${auctionId}`, handleNewMessage);
+            console.log("Subscribed!")
+        }
+        client.onStompError = (frame) => {
+            console.log(`An error occurred: ${frame}`);
+        };
+        client.activate();
+        // return () => {
+        //     client.deactivate();
+        // };
+    }, []);
+
+    function handleSend(event) {
+        client.publish({
+            destination: "/app/sendMessage",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${jwt}`
+            },
+            body: JSON.stringify({data: "my message"})
+        });
+        event.preventDefault();
+    }
+
+
+    function handleNewMessage(message) {
+        // setMessage(message);
+        console.log(message.body);
+    }
 
     //TODO de adaugat tokenul in client care il preia de pe server
 
@@ -99,24 +145,25 @@ const AuctionView = () => {
 
     // let onConnected = () => {
     //     console.log("Connected!!")
-    //     client.subscribe(`/auctions/${this.props.match.params.id}`, (msg) => {
-    //         if (msg.body) {
-    //             const priceHistory = JSON.parse(msg.body);
-    //             console.log("Price updated is:" + priceHistory.updated_price);
-    //             console.log(priceHistory.updated_price);
-    //             this.setState(priceHistory.updated_price);
-    //         }
-    //     });
+    //     // client.subscribe('/auctions_update/' + auctionId, (msg) => {
+    //     //     console.log("am ajuns sa ma abonez");
+    //     //     if (msg.body) {
+    //     //         const auction = JSON.parse(msg.body);
+    //     //         console.log("Price updated is:" + auction.initialPrice);
+    //     //         console.log(auction.initialPrice);
+    //     //         setAuction(auction.initialPrice);
+    //     //     }
+    //     // });
     // }
     //
     // let onMessageReceived = (msg) => {
-    //     setPriceHistory(msg.message);
+    //     setAuction(msg.initialPrice);
     // }
     //
     // let onDisconnected = () => {
     //     console.log("Disconnected!!")
     // }
-    //
+
     // const client = new Client({
     //     brokerURL: SOCKET_URL,
     //     reconnectDelay: 5000,
@@ -128,26 +175,8 @@ const AuctionView = () => {
     //
     // client.activate();
 
-    const client = Stomp.client(SOCKET_URL);
-    const headers = {
-        Authorization: `Bearer ${jwt}`
-    }
 
-    client.connect(headers, (frame) => {
-        console.log('Connected: ' + frame);
-        client.subscribe(`/auctions/${this.props.match.params.id}`, (message) => {
-            console.log('Received message: ' + message);
-            if (message.body) {
-                const priceHistory = JSON.parse(message.body);
-                console.log("Price updated is:" + priceHistory.updated_price);
-                console.log(priceHistory.updated_price);
-                this.setState(priceHistory.updated_price);
-            }
-        });
-        client.send('/app/sendMessage', {}, 'Hello, STOMP');
-    });
-
-
+    //pentru modal
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
@@ -158,16 +187,6 @@ const AuctionView = () => {
             <NavbarComponent/>
             <div className="col-3"></div>
             <div className="col-6">
-                {/*<SockJsClient*/}
-                {/*    url={SOCKET_URL}*/}
-                {/*    topics={[`/topic/auctions/${this.props.match.params.id}`]}*/}
-                {/*    onConnect={onConnected}*/}
-                {/*    onDisconnect={console.log("Disconnected!")}*/}
-                {/*    onMessage={msg => onMessageReceived(msg)}*/}
-                {/*    debug={false}*/}
-                {/*/>*/}
-
-                {/*<h1>am ceva modificat aici: {this.state.message}</h1>*/}
                 <h1 className="mt-3 mb-4">Auction with id: {auctionId}</h1>
                 {auction ? (
                     <>
@@ -176,7 +195,14 @@ const AuctionView = () => {
                                 <ListGroup.Item>Auction title: <b>{auction.auctionTitle}</b></ListGroup.Item>
                                 <ListGroup.Item>Auction
                                     description: <b>{auction.auctionDescription}</b></ListGroup.Item>
+
+                                {/*{priceHistory ? (*/}
+                                {/*    priceHistory.map((price) => (*/}
+                                <ListGroup.Item>auction price: <b>{auction.initialPrice}</b></ListGroup.Item>
+                                {/*))) : (*/}
                                 <ListGroup.Item>Initial price: <b>{auction.initialPrice}</b></ListGroup.Item>
+
+
                                 <ListGroup.Item>Final price: <b>{auction.finalPrice}</b></ListGroup.Item>
 
                             </ListGroup>
@@ -263,6 +289,9 @@ const AuctionView = () => {
                     </Table>
                 </div>
                 <div className="col-3"></div>
+                <Button variant="secondary" onClick={(event) => handleSend(event)}>
+                    Test
+                </Button>
             </div>
             <Footer/>
         </div>
