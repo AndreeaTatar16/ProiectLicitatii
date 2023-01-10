@@ -1,5 +1,5 @@
 import './App.css';
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {useLocalState} from "./util/useLocalStorage";
 import {Route, Routes} from "react-router-dom";
@@ -15,6 +15,9 @@ import AddAuction from "./Auctions/addAuction";
 
 function App() {
     const [jwt, setJwt] = useLocalState("", "jwt");
+    const [priceHistory, setPriceHistory] = useState(null);
+    const [updated_price, setUpdatedPrice] = useState("");
+    const SOCKET_URL = `ws://localhost:8081/ws-message?token=${jwt}`;
 
     // localStorage.getItem();
     // localStorage.setItem();
@@ -23,6 +26,7 @@ function App() {
     useEffect(() => {
         console.log(`JWT code is: ${jwt}`);
     }, [jwt]);
+
 
     return (
         <Routes>

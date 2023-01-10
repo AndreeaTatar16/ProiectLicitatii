@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/bidding")
 public class PriceHistoryController {
@@ -21,4 +23,12 @@ public class PriceHistoryController {
 
         return ResponseEntity.ok(newPriceHistory);
     }
+
+    @GetMapping("/{auctionId}")
+    public ResponseEntity<?> getPriceHistories(@PathVariable Auction auctionId, @AuthenticationPrincipal User user) {
+        Set<PriceHistory> priceHistoryByAuction = priceHistoryService.findByAuctionID(auctionId);
+
+        return ResponseEntity.ok(priceHistoryByAuction);
+    }
+
 }
