@@ -3,7 +3,7 @@ import {useLocalState} from "../util/useLocalStorage";
 import {Link} from "react-router-dom";
 import NavbarComponent from "../components/NavbarComponent";
 import Footer from "../components/Footer";
-import {Button, Form, ListGroup, Modal, Table} from "react-bootstrap";
+import {Badge, Button, Form, ListGroup, Modal, Table} from "react-bootstrap";
 import {Client} from "@stomp/stompjs";
 
 
@@ -48,11 +48,19 @@ const AuctionView = () => {
         });
     }
 
+    function updateAuction(property, value) {
+        const newAuction = {...auction};     //duplicate an object auction
+        newAuction[property] = value;
+        setAuction(newAuction);   //seteaza in obiectul initial noile valori
+        console.log(auction);
+    }
+
     function bid() {
         const reqBody = {
             updated_price: updated_price
         };
         console.log(updated_price);
+
         fetch(`/bidding/${auctionId}`, {
             headers: {
                 "Content-Type": "application/json",
@@ -67,9 +75,10 @@ const AuctionView = () => {
             window.location.href = `/auctions/${auctionId}`;
             setPriceHistory(priceHistory);
             console.log(priceHistory.updated_price);
-            setLastBid(priceHistory);
-            console.log("un string de identificat" + lastBid);
+            //setLastBid(priceHistory.id);
+            //console.log("un string de identificat" + lastBid);
         });
+
     }
 
     //get pentru preturi
@@ -92,7 +101,6 @@ const AuctionView = () => {
     //const SOCKET_URL = 'ws://localhost:8081/ws-message?token=${eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzAzNjA5NjgyLCJpYXQiOjE2NzI1MDU2ODIsImF1dGhvcml0aWVzIjpbIkFETUlOIl19.DIGdxKw49UbIBNWjsHcH-qJnackLzoq9niK2htAZyXlE0N7myrZjjH_W_w-cOweew8CTkMpl6YmJdjc9t5MA3w}';
     const SOCKET_URL = `ws://localhost:8081/ws-message?token=${jwt}`;
     //const SOCKET_URL = 'ws://localhost:8081/ws-message';
-
 
     useEffect(() => {
         const client = new Client({
@@ -131,50 +139,62 @@ const AuctionView = () => {
         event.preventDefault();
     }
 
-
     function handleNewMessage(message) {
-        // setMessage(message);
         console.log(message.body);
+        fetch(`/auctions/${auctionId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${jwt}`
+            },
+            method: "GET"
+        }).then(response => {
+            if (response.status === 200)
+                return response.json();
+        }).then(auctionData => {
+            setAuction(auctionData);
+        });
     }
 
-    //TODO de adaugat tokenul in client care il preia de pe server
+    useEffect(() => {
+        updateAuction("lastPrice", lastBid);
+        console.log(lastBid)
+        fetch('/send_update', {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${jwt}`,
+            },
+            method: "POST",
+            body: JSON.stringify(auction)
+        }).then(response => {
+            if (response.status === 200) {
+                return response.json();
+            }
+        }).then(auctionData => {
+            setAuction(auctionData);
+            console.log("am primit aici " + auction.lastPrice)
+        });
+    }, []);
+    
 
-    //TODO am incercat sa facem sa ii dam custom header la client, insa nu vrea, asa ca i l-am dat cu query params
-
-    //todo se poate si cu sockjs, fara a fi custom header
-
-    // let onConnected = () => {
-    //     console.log("Connected!!")
-    //     // client.subscribe('/auctions_update/' + auctionId, (msg) => {
-    //     //     console.log("am ajuns sa ma abonez");
-    //     //     if (msg.body) {
-    //     //         const auction = JSON.parse(msg.body);
-    //     //         console.log("Price updated is:" + auction.initialPrice);
-    //     //         console.log(auction.initialPrice);
-    //     //         setAuction(auction.initialPrice);
-    //     //     }
-    //     // });
+    // function sendPriceHistoryTest() {
+    //     updateAuction("lastPrice", lastBid);
+    //     console.log(lastBid)
+    //     fetch('/send_update', {
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             Authorization: `Bearer ${jwt}`,
+    //         },
+    //         method: "POST",
+    //         body: JSON.stringify(auction)
+    //     }).then(response => {
+    //         if (response.status === 200) {
+    //             return response.json();
+    //         }
+    //     }).then(auctionData => {
+    //         setAuction(auctionData);
+    //         console.log("am primit aici " + auctionData.lastPrice)
+    //     });
     // }
-    //
-    // let onMessageReceived = (msg) => {
-    //     setAuction(msg.initialPrice);
-    // }
-    //
-    // let onDisconnected = () => {
-    //     console.log("Disconnected!!")
-    // }
-
-    // const client = new Client({
-    //     brokerURL: SOCKET_URL,
-    //     reconnectDelay: 5000,
-    //     heartbeatIncoming: 4000,
-    //     heartbeatOutgoing: 4000,
-    //     onConnect: onConnected,
-    //     onDisconnect: onDisconnected
-    // });
-    //
-    // client.activate();
-
 
     //pentru modal
     const [show, setShow] = useState(false);
@@ -187,7 +207,7 @@ const AuctionView = () => {
             <NavbarComponent/>
             <div className="col-3"></div>
             <div className="col-6">
-                <h1 className="mt-3 mb-4">Auction with id: {auctionId}</h1>
+                <h1 className="mt-3 mb-4">Auction with id: {auctionId} </h1>
                 {auction ? (
                     <>
                         <div>
@@ -198,7 +218,7 @@ const AuctionView = () => {
 
                                 {/*{priceHistory ? (*/}
                                 {/*    priceHistory.map((price) => (*/}
-                                <ListGroup.Item>auction price: <b>{auction.initialPrice}</b></ListGroup.Item>
+                                <ListGroup.Item>Auction last price: <b>{auction.lastPrice}</b></ListGroup.Item>
                                 {/*))) : (*/}
                                 <ListGroup.Item>Initial price: <b>{auction.initialPrice}</b></ListGroup.Item>
 
@@ -239,7 +259,10 @@ const AuctionView = () => {
                                             <Form.Label>The price you are bidding</Form.Label>
                                             <input className="form-control" type="number" id="updated_price"
                                                    autoFocus
-                                                   onChange={(e) => setUpdatedPrice(e.target.value)}>
+                                                   onChange={(e) => {
+                                                       setLastBid(e.target.value)
+                                                       setUpdatedPrice(e.target.value)
+                                                   }}>
                                             </input>
                                         </Form.Group>
                                     </Form>
@@ -289,9 +312,6 @@ const AuctionView = () => {
                     </Table>
                 </div>
                 <div className="col-3"></div>
-                <Button variant="secondary" onClick={(event) => handleSend(event)}>
-                    Test
-                </Button>
             </div>
             <Footer/>
         </div>

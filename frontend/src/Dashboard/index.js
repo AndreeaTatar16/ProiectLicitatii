@@ -44,7 +44,7 @@ const Dashboard = () => {
                     auctions.map((auction) => (
                         <div><Link className="text-decoration-none text-black" to={`/auctions/${auction.id}`}>
                             <Card className="mt-3 mb-3 bg-card-auctions text-white border-0">
-                                {/*<Card.Img src="holder.js/100px270" alt="Card image"/>*/}
+                                <Card.Img src="auctionHands.jpg" id="imgDash" alt="Card image"/>
                                 Auction ID: {auction.id}
                                 <Card.Title className="ms-4 text-start">{auction.auctionTitle}</Card.Title>
                                 <Card.Text>
@@ -53,7 +53,6 @@ const Dashboard = () => {
                                 <Card.Text>Added on {auction.created_at}</Card.Text>
                             </Card>
                         </Link></div>
-
                     ))
                 ) : (
                     <></>
