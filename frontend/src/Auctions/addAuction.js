@@ -3,6 +3,8 @@ import {useLocalState} from "../util/useLocalStorage";
 import NavbarComponent from "../components/NavbarComponent";
 import Footer from "../components/Footer";
 import {Link} from "react-router-dom";
+import FileSaver from 'file-saver';
+//import FileSaver from 'file-saver';
 
 const AddAuction = () => {
     const [jwt, setJwt] = useLocalState("", "jwt");
@@ -20,7 +22,7 @@ const AddAuction = () => {
         const reqBody = {
             auctionTitle: auctionTitle,
             auctionDescription: auctionDescription,
-            //auctionImage: auctionImage,
+            auctionImage: auctionImage,
             initialPrice: initialPrice,
             finalPrice: finalPrice,
             created_at: new Date(created_at),
@@ -39,9 +41,6 @@ const AddAuction = () => {
                 return response.json();
             }
         })
-        // .then(auctionData => {
-        //     setAuction(auctionData);
-        // });
     }
 
     return (
@@ -110,7 +109,8 @@ const AddAuction = () => {
                             </div>
                         </fieldset>
 
-                        <button className="btn bg-navbar text-white" onClick={() => createAuction()}><Link
+                        <button className="btn bg-navbar text-white"
+                                onClick={() => createAuction()}><Link
                             className="text-decoration-none text-white"
                             to={"/dashboard"}>Submit auction
                         </Link></button>

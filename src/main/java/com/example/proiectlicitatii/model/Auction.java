@@ -14,14 +14,22 @@ public class Auction {
     private String auctionDescription;
     private String auctionImage;
     private float initialPrice;
+    private float lastPrice;
     private float finalPrice;
     private LocalDateTime created_at;
-
     //mai multe licitatii pot avea acelasi user
     @ManyToOne(optional = false)  //optional = false pt ca nu poate exista o licitatie fara un user
     private User createdBy;
 
     public Auction() {
+    }
+
+    public float getLastPrice() {
+        return lastPrice;
+    }
+
+    public void setLastPrice(float lastPrice) {
+        this.lastPrice = lastPrice;
     }
 
     public long getId() {

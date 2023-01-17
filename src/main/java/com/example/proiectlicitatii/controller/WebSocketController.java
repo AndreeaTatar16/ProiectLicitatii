@@ -1,6 +1,9 @@
 package com.example.proiectlicitatii.controller;
 
 import com.example.proiectlicitatii.model.Auction;
+import com.example.proiectlicitatii.model.AuctionDTO;
+import com.example.proiectlicitatii.model.PriceHistory;
+import com.example.proiectlicitatii.service.AuctionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,9 @@ public class WebSocketController {
     @Autowired
     SimpMessagingTemplate template;
 
+    @Autowired
+    AuctionService auctionService;
+
     public WebSocketController(SimpMessagingTemplate template) {
         this.template = template;
     }
@@ -28,17 +34,16 @@ public class WebSocketController {
     //trimite la server cu POST cererea pentru resursa
     //foloseste template-ul ca sa trimita mesajul la "/topic/auctions"
     @PostMapping("send_update")
-    public ResponseEntity<String> sendUpdate(@RequestBody Auction auctionDTO) {
-        template.convertAndSend("/auctions_update/" + auctionDTO.getId(), auctionDTO);
+    public ResponseEntity<Auction> sendUpdate(@RequestBody Auction auction) {
+        Auction auctionWithLastPrice = auctionService.edit(auction);
+        template.convertAndSend("/auctions_update/" + auction.getId(), auctionWithLastPrice);
 
-        return new ResponseEntity<>("Product Updated" + auctionDTO, HttpStatus.OK);
+        return ResponseEntity.ok(auction);
     }
 
     //este apelata metoda cand un mesaj este trimit de la client la /app/sendMessage
     @MessageMapping("/sendMessage")
-//    @SendTo("/auctions_update/{id}")
     public ResponseEntity<String> receiveMessage(@Payload @RequestBody String data) {
-//        log.info("Receive message:" + auctionDTO);
         System.out.println("Receive message:" + data);
         return new ResponseEntity<>("Product Updated" + data, HttpStatus.OK);
         // receive message from client

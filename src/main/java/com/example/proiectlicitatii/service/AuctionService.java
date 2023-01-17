@@ -6,6 +6,7 @@ import com.example.proiectlicitatii.repository.AuctionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,4 +36,9 @@ public class AuctionService {
     public void deleteById(Long auctionId) {
         auctionRepository.deleteById(auctionId);
     }
+
+    public List<Auction> findAll() {
+        return auctionRepository.findAll();
+    }
+
 }
